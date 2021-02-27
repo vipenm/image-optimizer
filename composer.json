@@ -1,0 +1,19 @@
+{
+  "name": "vipenm/image-optimizer",
+  "description": "Simple thumbnail generator",
+  "authors": [
+    {
+      "name": "Vipen Mahay",
+      "email": "vipenmahay@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "imagine/imagine": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "ImageOptimizer\\": "src/"
+    }
+  }
+}
