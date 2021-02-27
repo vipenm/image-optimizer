@@ -2,67 +2,91 @@
 
 namespace ImageOptimizer;
 
-require_once __DIR__.'/vendor/autoload.php';
+require_once 'vendor/autoload.php';
+
+use Imagine\Imagick\Imagine;
+use Imagine\Image\Box;
 
 class ImageOptimizer
 {
+  /**
+   * @var Imagine
+   */
   private $imagine;
 
-  private $directory;
+  /**
+   * @var string
+   */
+  private string $directory;
 
+  /**
+   * @var string
+   */
   private $log_file;
 
   public function __construct($directory = './images')
   {
-    $this->imagine = new Imagine\Imagick\Imagine();
+    $this->imagine = new Imagine();
     $this->directory = $directory;
     $this->log_file = fopen("logs/log.txt", "w") or die("Unable to open file");
   }
 
-  public function resizeAllImages($dir)
+  /**
+   * Recursively checks directories and sub-directories
+   * and resizes images to custom size
+   *
+   * @param string $dir
+   * @param int $width
+   * @param int $height
+   *
+   * @throws InvalidArgumentException
+   * @throws Exception
+   */
+  public function resizeAllImages($dir, $width = 200, $height = 200)
   {
-    $files = scandir($dir);
-
-    $this->getDateTime("Beginning optimizer", true);
-
-    foreach ($files as $key => $value) {
-      $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
-      if (!is_dir($path)) {
-        // resize image
-        $ext = pathinfo($path, PATHINFO_EXTENSION);
-        $file = pathinfo($path, PATHINFO_FILENAME);
-        if (in_array($ext, ['jpg', 'png', 'jpeg'])) {
-          try {
-            $newPath = $this->directory . '/_thumb_' . $file . '.' . $ext;
-            echo $this->getDateTime("Converting image " . $file . '...');
-            $this->imagine->open($path)
-              ->thumbnail(new \Imagine\Image\Box(224, 300))
-              ->save($newPath);
-            echo "done\n";
-          } catch (\Throwable $th) {
-            echo "error\n";
-            throw $this->getDateTime("Something went wrong", true);
-          }
-        }
-      } else if ($value != '.' && $value != "..") {
-        $this->resizeAllImages($path);
+    try {
+      $this->getDateTime("Beginning optimizer");
+      if (!is_dir($dir)) {
+        $this->getDateTime("Error reading from directory. Does it exist?");
+        throw new \Exception("Error reading from directory. Does it exist?");
       }
+      $files = scandir($dir);
+
+      foreach ($files as $key => $value) {
+        $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
+        if (!is_dir($path)) {
+          // resize image
+          $ext = pathinfo($path, PATHINFO_EXTENSION);
+          $file = pathinfo($path, PATHINFO_FILENAME);
+          if (in_array($ext, ['jpg', 'png', 'jpeg'])) {
+            try {
+              $newPath = $this->directory . '/_thumb_' . $file . '.' . $ext;
+              echo $this->getDateTime("Converting image " . $file . '...');
+              $this->imagine->open('$path')
+                ->thumbnail(new Box($width, $height))
+                ->save($newPath);
+              echo "done";
+            } catch (\InvalidArgumentException $err) {
+              $this->getDateTime("Something went wrong: " . $err);
+            } catch (\Exception $err) {
+              $this->getDateTime("Something went wrong " . $err);
+            }
+          }
+        } else if ($value != '.' && $value != "..") {
+          $this->resizeAllImages($path);
+        }
+      }
+    } catch (\Exception $err) {
+      echo $err;
     }
     fclose($this->log_file);
   }
 
-  public function getDateTime($message, $newline = false)
+  public function getDateTime($message)
   {
-    $text = "[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message;
-    if ($newline) {
-      $text = $text . "\n";
-    }
+    $text = "\n[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message;
 
     echo $text;
     fwrite($this->log_file, $text);
   }
 }
-
-
-$resizer = new ImageOptimizer();
-$resizer->resizeAllImages('./Photos/UploadedToPi');
