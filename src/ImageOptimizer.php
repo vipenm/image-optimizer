@@ -17,7 +17,6 @@ class ImageOptimizer
     $this->imagine = new Imagine\Imagick\Imagine();
     $this->directory = $directory;
     $this->log_file = fopen("logs/log.txt", "w") or die("Unable to open file");
-    echo "Test";
   }
 
   public function resizeAllImages($dir)
