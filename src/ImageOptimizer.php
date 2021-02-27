@@ -28,7 +28,7 @@ class ImageOptimizer
   {
     $this->imagine = new Imagine();
     $this->directory = $directory;
-    $this->log_file = fopen("logs/log.txt", "w") or die("Unable to open file");
+    $this->log_file = fopen("logs/log.log", "w") or die("Unable to open file");
   }
 
   /**
@@ -45,9 +45,9 @@ class ImageOptimizer
   {
     try {
       $dir = $this->directory;
-      $this->getDateTime("Beginning optimizer");
+      $this->getDateTime("Beginning optimizer", false, true);
       if (!is_dir($dir)) {
-        $this->getDateTime("Error reading from directory. Does it exist?");
+        $this->getDateTime("Error reading from directory. Does it exist?", false, true);
         throw new \Exception("Error reading from directory. Does it exist?");
       }
       $files = scandir($dir);
@@ -65,7 +65,8 @@ class ImageOptimizer
               $this->imagine->open($path)
                 ->thumbnail(new Box($width, $height))
                 ->save($newPath);
-              echo "done";
+              echo "done\n";
+              fwrite($this->log_file, "done\n");
             } catch (\InvalidArgumentException $err) {
               $this->getDateTime("Something went wrong: " . $err, true);
             } catch (\Exception $err) {
@@ -82,13 +83,17 @@ class ImageOptimizer
     fclose($this->log_file);
   }
 
-  private function getDateTime($message, $prependNewLine = false)
+  private function getDateTime($message, $prependNewLine = false, $appendNewLine = false)
   {
     if ($prependNewLine) {
       $text = "\n[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message . "\n";
     }
 
-    $text = "[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message . "\n";
+    $text = "[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message;
+
+    if ($appendNewLine) {
+      $text = $text . "\n";
+    }
 
     echo $text;
     fwrite($this->log_file, $text);
