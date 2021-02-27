@@ -62,7 +62,7 @@ class ImageOptimizer
             try {
               $newPath = $this->directory . '/_thumb_' . $file . '.' . $ext;
               echo $this->getDateTime("Converting image " . $file . '...');
-              $this->imagine->open('$path')
+              $this->imagine->open($path)
                 ->thumbnail(new Box($width, $height))
                 ->save($newPath);
               echo "done";
