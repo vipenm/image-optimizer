@@ -1,6 +1,8 @@
 {
   "name": "vipenm/image-optimizer",
   "description": "Simple thumbnail generator",
+  "license": "MIT",
+  "version": "1.0.1",
   "authors": [
     {
       "name": "Vipen Mahay",
