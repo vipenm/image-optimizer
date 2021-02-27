@@ -35,16 +35,16 @@ class ImageOptimizer
    * Recursively checks directories and sub-directories
    * and resizes images to custom size
    *
-   * @param string $dir
    * @param int $width
    * @param int $height
    *
    * @throws InvalidArgumentException
    * @throws Exception
    */
-  public function resizeAllImages($dir, $width = 200, $height = 200)
+  public function resizeAllImages($width = 200, $height = 200)
   {
     try {
+      $dir = $this->directory;
       $this->getDateTime("Beginning optimizer");
       if (!is_dir($dir)) {
         $this->getDateTime("Error reading from directory. Does it exist?");
@@ -67,9 +67,9 @@ class ImageOptimizer
                 ->save($newPath);
               echo "done";
             } catch (\InvalidArgumentException $err) {
-              $this->getDateTime("Something went wrong: " . $err);
+              $this->getDateTime("Something went wrong: " . $err, true);
             } catch (\Exception $err) {
-              $this->getDateTime("Something went wrong " . $err);
+              $this->getDateTime("Something went wrong: " . $err, true);
             }
           }
         } else if ($value != '.' && $value != "..") {
@@ -82,9 +82,13 @@ class ImageOptimizer
     fclose($this->log_file);
   }
 
-  public function getDateTime($message)
+  private function getDateTime($message, $prependNewLine = false)
   {
-    $text = "\n[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message;
+    if ($prependNewLine) {
+      $text = "\n[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message . "\n";
+    }
+
+    $text = "[" . date("d/m/Y g:ia",strtotime('now')) . "] " . $message . "\n";
 
     echo $text;
     fwrite($this->log_file, $text);
